@@ -1,0 +1,182 @@
+<?php
+
+namespace App\Http\Controllers\Product;
+
+use App\Models\User;
+use App\Models\Product;
+use App\Models\Category;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
+
+// for middleware in controller
+use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Routing\Controllers\HasMiddleware;
+
+class ProductController extends Controller
+{
+
+    // public static function middleware(): array
+    // {
+    //     return [
+    //         new Middleware(middleware: 'admin', only: [ 'index','delete']),
+    //     ];
+    // }
+
+    // Show all Product
+    public function index() {
+        // $allProduct = Product::all();
+        $allProduct=  Product::with('categories')->get();
+        return response()->json( ['Products' => $allProduct, 'status'=>true], 200);
+    }
+/////////////////////////////////////////////////////////////////////////////////
+      //Show single user Product by caregory
+      public function showByCategory(Request $request ) {
+
+        $Products = DB::table('products.categories')->where('category_id', $request->id)->get();
+
+        // $user = Product::with('Product.categories')->findOrFail($request->id);   
+        // if($user->id != auth()->id()) {
+        //     abort(403, 'Unauthorized Action',);
+        // }
+          if(empty( $Products)){
+            // if(!$user->Product){
+              return response()->json(
+                  ['message' => "no product, please create one",
+                  'status'=>true],404);
+          }
+          
+          return response()->json(['Products' => $Products,'status'=>true], 200);
+      }
+////////////////////////////////////////////////////////////////////////
+         //Show single user Product
+         public function show(Request $request ) {
+          $user = User::with('Product.categories')->findOrFail($request->id);
+          // if($user->id != auth()->id()) {
+          //     abort(403, 'Unauthorized Action',);
+          // }
+            if(empty( $user->product)){
+              // if(!$user->Product){
+                return response()->json(
+                    ['message' => "You don't have a Product, please create one",
+                    'status'=>true],404);
+            }
+            $Product = $user->Product;
+            return response()->json(['Products' => $Product,'status'=>true], 200);
+        }
+  
+
+
+    /*****************
+     *   // Store Business Product Data
+     *********************************/
+  
+    public function store(Request $request) {
+        $category = Category::all();
+        if ($category->isEmpty() ) {
+            // if (!$category) {
+            return response()->json(
+                ['message' => "pls add categories, categories empty",
+                'status'=>false ],401);
+        }
+       $request->validate([
+           'image' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048',
+            'price' => 'required',
+            'details' => 'required',
+            'name' => 'required',
+            'category_id' => 'required|array', // Ensure category_id is an array
+            '   category_id.*' => 'exists:categories,id', // Validate that each category ID exists
+        ]);
+        
+           $businessProduct = new Product();
+           $businessProduct->image = $request->image;
+           $businessProduct ->price= $request->price;
+           $businessProduct->details =  $request->details;
+          //  $businessProduct->category_id =  $request->category_id;
+           $businessProduct->name =  $request->name;
+
+    if($request->hasFile('image')) {
+        $businessProduct->image = $request->file('image')->store('image', 'public');
+    }
+
+    $businessProduct->user_id = auth()->id();
+    
+    // $businessProduct->user_id = 1;
+    $businessProduct->save(); 
+      // Attach categories to the product
+      if ($request->has('category_id')) {
+        $businessProduct->categories()->sync($request->category_id);
+    }
+
+        return response()->json([
+            'message'=> 'Product created successfully!',
+            'Product'=> $businessProduct,'status'=>true], 200);
+    }
+
+
+    ///////////////////////////
+   ////// UPDATE PRODUCT/////////////
+
+       // Update Business Product Data
+    public function update(Request $request) {
+
+             $request->validate([
+           'image' => 'sometimes|max:2048',
+            'price' => '',
+            'details' => '',
+            'name' => '',
+            'category_id' => 'array', // Ensure category_id is an array
+            'category_id.*' => 'exists:categories,id', // Validate that each category ID exists
+        ]);
+
+        $businessProduct = Product::findOrFail($request->id);
+       
+          if($businessProduct->user_id != auth()->id() ) {
+                      abort(403, 'Unauthorized Action',);
+                  }   
+           $businessProduct->image = $request->image;
+           $businessProduct ->price= $request->price;
+           $businessProduct->details =  $request->details;
+           $businessProduct->name =  $request->name;
+          //  $businessProduct->category_id =  $request->category_id;
+
+              //check if image
+          if($request->hasFile('image')){
+            //upload it
+            $image = $request->file('image')->store('image', 'public');
+            //delete former image
+            Storage::disk('public')->delete($businessProduct->image);
+            $businessProduct->image = $image;
+             }
+               $businessProduct->user_id = auth()->id();
+
+               $businessProduct->save();
+               //   // Attach categories to the product
+            if ($request->has('category_id')) {
+              $businessProduct->categories()->sync($request->category_id);
+          }
+
+          return response()->json([
+                      'message'=> 'Product updated successfully!',
+                      'Product'=>$businessProduct,'status'=>true], 200);
+          
+        
+            
+      }
+
+
+//  Delete user and business product
+public function delete(Request $request) {
+    $product = Product::find($request->id);
+
+    if($product->user_id != auth()->id() ) {
+      abort(403, 'Unauthorized Action',);
+  }   
+//    $user->delete();
+     $product->delete();
+     return response()->json([ 'message'=>'Product deleted successfully!'],200);
+
+}
+
+}
