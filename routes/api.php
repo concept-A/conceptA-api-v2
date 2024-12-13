@@ -27,7 +27,7 @@ use App\Http\Controllers\User\BusinessRequestController;
 */
 
 
-Route::group(['prefix' => 'v1'], function () {
+Route::group(['prefix' => 'v2'], function () {
         
    //Authentication Route
     Route::post('/admin/admin-register', [AuthController::class, 'registerAdmin']);
@@ -51,14 +51,15 @@ Route::group(['prefix' => 'v1'], function () {
     Route::post('/paystack-callback', [FeesController::class, 'payStackWebhook']);
 
 
-    //////////////////////ALL ROUTE ACCESSIBLE TO ALL USER //////////////// 
-      Route::get('/products', [ProductController::class, 'index']);
-       Route::get('/cat-products/{id}', [ProductController::class, 'showBycategory']);
-      Route::get('/products/{id}', [ProductController::class, 'show']);
-    
+        //////////////////////ALL ROUTE ACCESSIBLE TO ALL USER //////////////// 
+        Route::get('/products', [ProductController::class, 'index']);
+        Route::get('/categories/{category}/products', [ProductController::class, 'showByCategory']);
+        Route::get('/products/{id}', [ProductController::class, 'show']);
+  
+        //////////////////// get all products by category///////////
 });
 
-Route::group(  ['middleware'=> ['auth:sanctum','verified'],  'prefix' => 'v1' ], function () {  
+Route::group(  ['middleware'=> ['auth:sanctum','verified'],  'prefix' => 'v2' ], function () {  
     Route::post('/logout', [AuthController::class, 'logout']);
 
           // Manage User routes
@@ -103,10 +104,11 @@ Route::group(  ['middleware'=> ['auth:sanctum','verified'],  'prefix' => 'v1' ],
 
   Route::get('/groups', [GroupController::class, 'index']);
   Route::get('/groups/{id}', [GroupController::class, 'show']);
- 
+  Route::get('/user-group/{id}', [GroupController::class, 'showUserGroup']);
   Route::post('/business-group', [GroupController::class, 'store']);
   Route::post('/groups/{id}', [GroupController::class, 'update']);
 Route::delete('/groups/{id}', [GroupController::class, 'delete']);
+
   //for group request
   Route::get('/group-request/{id}', [GroupController::class, 'groupRequest']);
  

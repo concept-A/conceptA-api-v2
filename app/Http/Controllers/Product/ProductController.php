@@ -32,23 +32,46 @@ class ProductController extends Controller
     }
 /////////////////////////////////////////////////////////////////////////////////
       //Show single user Product by caregory
-      public function showByCategory(Request $request ) {
+      // public function showByCategory(Request $request ) {
 
-        $Products = DB::table('products.categories')->where('category_id', $request->id)->get();
+      //   // $Products = DB::table('products.categories')->where('category_id', $request->id)->get();
 
-        // $user = Product::with('Product.categories')->findOrFail($request->id);   
-        // if($user->id != auth()->id()) {
-        //     abort(403, 'Unauthorized Action',);
-        // }
-          if(empty( $Products)){
-            // if(!$user->Product){
-              return response()->json(
-                  ['message' => "no product, please create one",
-                  'status'=>true],404);
-          }
+      //   // $user = Product::with('Product.categories')->findOrFail($request->id);   
+      //   // if($user->id != auth()->id()) {
+      //   //     abort(403, 'Unauthorized Action',);
+      //   // }
+      //     if(empty( $Products)){
+      //       // if(!$user->Product){
+      //         return response()->json(
+      //             ['message' => "no product, please create one",
+      //             'status'=>true],404);
+      //     }
           
-          return response()->json(['Products' => $Products,'status'=>true], 200);
-      }
+      //     return response()->json(['Products' => $Products,'status'=>true], 200);
+      // }
+
+
+
+      //Show all product by Category
+      public function showByCategory(Category $category)
+        {
+            // Get products related to the category
+            $products = $category->products;
+
+            // Check if the category has any products
+            if ($products->isEmpty()) {
+                return response()->json([
+                    'message' => "No products found in this category.",
+                    'status' => false,
+                ], 404);
+            }
+
+            // Return the products
+            return response()->json([
+                'Products' => $products,
+                'status' => true,
+            ], 200);
+        }
 ////////////////////////////////////////////////////////////////////////
          //Show single user Product
          public function show(Request $request ) {

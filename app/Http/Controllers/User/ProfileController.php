@@ -177,13 +177,12 @@ if ($request->has('group_id')) {
               abort(403, 'Unauthorized Action',);
           }
         $request->validate([
-            'business_name' => 'required',
-            'shop_address' => 'required',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-            'contact' => 'required',
+            'business_name' => 'nullable',
+            'shop_address' => 'nullable',
+            'image' => 'nullable',
+            'contact' => 'nullable',
             'subscription' => 'nullable',
-            // 'category_id' =>'required'
-            'category_id' => 'required|array', // Ensure category_id is an array
+            'category_id' => 'nullable|array', // Ensure category_id is an array
             '   category_id.*' => 'exists:categories,id', // Validate that each category ID exists
         ]);
             $businessprofile =  Profile::find($profile->id);
@@ -192,7 +191,6 @@ if ($request->has('group_id')) {
             $businessprofile->image = $request->image;
             $businessprofile->contact= $request->contact;
             $businessprofile->subscription = $request->subscription;
-            // $businessprofile->category_id = $request->category_id;
           
             //check if image
           if($request->hasFile('image')){

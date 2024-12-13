@@ -5,7 +5,6 @@ namespace App\Http\Controllers\User;
 use App\Models\User;
 use App\Models\Group;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 
 // for middleware in controller
@@ -75,31 +74,34 @@ class GroupController extends Controller
      *   // create Group Data
      *********************************/
 
-    // Update Business Group Data
+    // store Business Group Data
     public function store(Request $request) {
 
       $request->validate([
-          'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-          'details' => 'string|required',
-          'name' => 'unique:groups|string',
-      ]);
-      
-         $group = new Group();
-         $group->image = $request->image;
-         $group->details =  $request->details;
-         $group->name =  $request->name;
+        'name' => 'required|string|max:255',
+        'details' => 'required|string',
+      'image' => 'nullable',
+       
+        ]);
         
-          //check if image
+         $businessGroup = new Group();
+         $businessGroup->details =  $request->details;
+         $businessGroup->name =  $request->name;
+        
+        // $group = Group::create($request->all());
+       
+        
+        //   //check if image
         if($request->hasFile('image')){
           //upload it
-          $group->image = $request->file('image')->store('image', 'public');
+          $businessGroup->image = $request->file('image')->store('image', 'public');
            }
-           
-         $group->save();
+        
+         $businessGroup->save();
           
        return response()->json([
           'message'=> 'Group Added successfully!',
-          'Group'=>$group,'status'=>true], 200);
+          'Group'=>$businessGroup,'status'=>true], 200);
  
   }
 

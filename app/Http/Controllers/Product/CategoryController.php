@@ -35,7 +35,6 @@ public static function middleware(): array
       }
 
 
-
     /*****************
      *   // Store product category Data
      *********************************/
