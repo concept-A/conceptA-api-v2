@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\Fees;
 
 use Exception;
-use App\Models\Fees;
+use App\Models\Fee;
 use App\Models\User;
+use App\Models\Profile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
 
@@ -26,7 +27,7 @@ class FeesController extends Controller
     // show all paid fees
     public function allPayment()
     {
-        $allFees =  Fees::all();
+        $allFees =  Fee::all();
         return response()->json(['feess'=>$allFees],200);
     }
 
@@ -49,7 +50,7 @@ class FeesController extends Controller
             'payment_id'=>$request->payment_id,
         ]);
         $fees = DB::table('feess')
-        ->where('user_id', $request->matric_number)
+        ->where('user_id', $request->id)
         ->where('payment_id', $request->payment_id)
         ->get();
         return response()->json(['fees'=>$fees],200);
@@ -79,21 +80,21 @@ class FeesController extends Controller
 
     
     
-     /*********
-      * payStack payment
-      for Auth access only
-      **********************/
+    //  /*********
+    //   * payStack payment
+    //   for Auth access only
+    //   **********************/
      public function payStack(Request $request)
         {   
-            $user = User::with('profiles')->find(1);
+            $user = User::findOrFail($request->user_id);
         if( $request->amount < 2000){
             return response()->json(['message'=>'invalid amount, pls comfirm '],400);
          }
             
          try {
           //  $student = Auth();
-            $email = $user->profile->email;
-            $amount = $request->amount*100;
+            $email = $request->email;
+            $amount = $request->amount*10;
             $url = "https://api.paystack.co/transaction/initialize";
 
               // Additional data to pass along with the payment
@@ -102,7 +103,8 @@ class FeesController extends Controller
                 "first_name" => $user->first_name,
                 "last_name" => $user->last_name,
                 'user_id' => $user->id,
-                'payment_status' =>  $request->payment_status,]
+                'payment_status' =>  $request->payment_status,
+                ]
             ];
 
             $fields = [
@@ -111,91 +113,95 @@ class FeesController extends Controller
                 'metadata' => $metadata,
             ];
 
+        // $response = Http::withHeaders([
+        //     "Authorization" => "Bearer ".config("services.paystack.secret_key"),
+        //     "Cache-Control" => "no-cache",
+        // ])->timeout(30)->post($url, $fields);
+        
         $response = Http::withHeaders([
-            "Authorization" => "Bearer ".config("services.paystack.secret_key"),
+            // "Authorization" => "Bearer ".config("services.paystack.secret_key"),
+            'Authorization' => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
+            // "Authorization" => "Bearer sk_test_d95812d6e2776b0d1460b5d18b3fed4d92501b6f",
             "Cache-Control" => "no-cache",
-        ])->timeout(30)->post($url, $fields);
+        ])->timeout(30)->withOptions([
+            'verify' => false,
+        ])->post($url, $fields);
 
-        // Handle the response as needed (e.g., redirect to payment page)
-        $response = $response->json();
-                $fees = new Fees();
-                $fees->user_id =$user->id;
-                $fees->payment_id = $response['data']['reference'];
-                $fees->amount = $request->amount;
-                $fees->payment_status = 'pending';
-                $fees->save();
+        // Decode the response
+        $responseData = $response->json();
+        // Capture the payment reference from the response
+        $paymentReference = $responseData['data']['reference']; // This is the unique reference for the payment
+
+        // Store fee details in your database
+        $fees = new Fee();
+        $fees->user_id = $user->id;
+        $fees->payment_id = $paymentReference; // You should use the reference here, not a static value
+        $fees->amount = $request->amount;
+        $fees->payment_status = 0; // pending or similar
+        $fees->save();
+
+        // Redirect the user to Paystack's checkout page
+        // return redirect($responseData['data']['authorization_url']);
     
-        return response()->json( [ 'response'=>$response, 'message'=>'payment successful '],200);
-         }catch(Exception $e){
-        return response()->json(['error' => $e->getMessage(),'message'=>'payment failled.'], 422);
-         }
+        return response()->json( [ 'response'=>$responseData, 'message'=>'payment successful '],200);
+    } catch (Exception $e) {
+        return response()->json(['error' => $e->getMessage(), 'message' => 'payment failed.'], 422);
+    }
     } 
      
 
 
-
     public function payStackWebhook(Request $request)
     {
-        //Get Payload
         $payload = $request->getContent();
-        // $payload = $request->all();
-
-        // Verify the Paystack webhook signature
         $paystackSecret = config('services.paystack.secret_key');
         $paystackHeader = $request->header('x-paystack-signature');
-
-        //
+    
+        // Verify the Paystack webhook signature
         if ($this->isValidPaystackWebhook($payload, $paystackHeader, $paystackSecret)) {
-            // Handle the webhook event based on the event type
             $eventData = $request->json('data');
             $eventType = $request->json('event');
-
+            $metadata = $eventData['metadata'] ?? [];
+    
             if ($eventType === 'charge.success') {
-    
-                // Handle successful payment event
-                // Example: Update order status or send confirmation email
-
-                // $fees = new Fees();
-                // $fees->student_id =$eventData['customer']['metadata']['student_id'];
-                // $fees->current_session = $eventData['metadata'];
-                // $fees->payment_id = $eventData['customer']['metadata']['reference'];
-                // $fees->amount = $eventData['customer']['metadata']['amount'];
-                // $fees->payment_type = $eventData['customer']['metadata']['payment_type'];
-                // $fees->payment_status = 'Paid';
-                // $fees->semester =$eventData['customer']['metadata']['semester'];
-                // $fees->save();
-    
-                $userStatus = User::with('profile')->find(auth()->id());
-
-                $userStatus->profile->subscription =1;
-                $userStatus->save();
-    
-              return response()->json(['status' => 'payment succeessful '],200);
+                 // Extract user_id from metadata
+                    $userId = $metadata['user_id'] ?? null;
+                    if ($userId) {
+                        // Handle successful payment
+                        $fees = Fee::where('payment_id', $eventData['reference'])->first();
+                        $profile = Profile::where('user_id', $userId)->first();
+                        if ($fees) {
+                            $fees->payment_status = 'successful'; // Update payment status
+                            $fees->save();
+                        }
+                        if ($profile) {
+                            $profile->subscription = 1; // Update subscription status
+                            $profile->save();
+                        }
+        
+                        return response()->json(['status' => 'Payment successful'], 200);
+                    }
             } elseif ($eventType === 'charge.failure') {
-                // Handle failed payment event
-                // Example: Notify user about payment failure
-                 return response()->json(['status' => 'payment failed '],400);
-               //  Log::info('message', ['status' => 'payment failed ']);
+                // Handle failed payment
+                return response()->json(['status' => 'Payment failed'], 400);
             }
-          //  Log::info('message', ['success' => 'Webhook received']);
         } else {
-            Log::info('message', ['error' => 'Invalid webhook signature'],400);
+            return response()->json(['status' => 'Invalid webhook signature'], 400);
         }
-
-     
     }
-
+    
     private function isValidPaystackWebhook($payload, $signature, $secret)
     {
         $computedSignature = hash_hmac('sha512', $payload, $secret);
-        return $computedSignature === $signature;
-        // return hash_equals($hash, $signature);
+        return hash_equals($computedSignature, $signature);
     }
 
     
+
+
     public function delete($id)
     {
-        $fees =  Fees::find($id);
+        $fees =  Fee::find($id);
         $fees->delete();
         return response()->json('fees deleted successful');
     }

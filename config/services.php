@@ -33,6 +33,25 @@ return [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
+        'google' => [
+            'client_id'     => env('GOOGLE_CLIENT_ID'),
+            'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+            'redirect'      => env('GOOGLE_REDIRECT'),
+        ],
+        
+        'facebook' => [
+            'client_id'     => env('FB_CLIENT_ID'),
+            'client_secret' => env('FB_CLIENT_SECRET'),
+            'redirect'      => env('FB_REDIRECT'),
+        ],
+    
+       'paystack' => [
+            'secret_key' => env('PAYSTACK_SECRET_KEY'),
+],
     ],
+
+    
+    
+
 
 ];

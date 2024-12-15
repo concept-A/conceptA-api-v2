@@ -48,7 +48,7 @@ Route::group(['prefix' => 'v2'], function () {
     
     //////////////////////////////--------Payment Routes-------///////////////////////////////////////////
   Route::post('/paystack-payment', [FeesController::class, 'payStack']);
-    Route::post('/paystack-callback', [FeesController::class, 'payStackWebhook']);
+    Route::post('/paystack-webhook', [FeesController::class, 'payStackWebhook']);
 
 
         //////////////////////ALL ROUTE ACCESSIBLE TO ALL USER //////////////// 
@@ -58,6 +58,7 @@ Route::group(['prefix' => 'v2'], function () {
   
         //////////////////// get all products by category///////////
 });
+
 
 Route::group(  ['middleware'=> ['auth:sanctum','verified'],  'prefix' => 'v2' ], function () {  
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -121,9 +122,9 @@ Route::delete('/groups/{id}', [GroupController::class, 'delete']);
     Route::delete('/requests/{id}', [BusinessRequestController::class, 'delete']);
 
 /////////////////////////MANAGE PAYMENT/////////////////////
-Route::get('/payments', [FeesController::class, 'index']);
-Route::post('/paystack-payment', [FeesController::class, 'payStack']);
-Route::post('/paystack-callback', [FeesController::class, 'payStackWebhook']);
+// Route::get('/payments', [FeesController::class, 'index']);
+// Route::post('/paystack-payment', [FeesController::class, 'payStack']);
+// Route::post('/paystack-webhook', [FeesController::class, 'payStackWebhook']);
 
 Route::post('/filter-payment', [FeesController::class, 'filter']);
 

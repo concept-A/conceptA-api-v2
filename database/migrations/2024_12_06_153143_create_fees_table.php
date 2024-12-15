@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('payment_id');
             $table->unsignedBigInteger('user_id');
             $table->string('amount');
-            $table->boolean('payment_status')->default(false);
+            $table->string('payment_status');
             $table->timestamps();
         });
     }
