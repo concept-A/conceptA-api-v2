@@ -86,7 +86,7 @@ class FeesController extends Controller
     //   **********************/
      public function payStack(Request $request)
         {   
-            $user = User::findOrFail($request->user_id);
+            $user = User::findOrFail(4);
         if( $request->amount < 2000){
             return response()->json(['message'=>'invalid amount, pls comfirm '],400);
          }
@@ -94,7 +94,8 @@ class FeesController extends Controller
          try {
           //  $student = Auth();
             $email = $request->email;
-            $amount = $request->amount*10;
+            $amount = $request->amount;
+            $plan = $request->plan;
             $url = "https://api.paystack.co/transaction/initialize";
 
               // Additional data to pass along with the payment
@@ -110,6 +111,7 @@ class FeesController extends Controller
             $fields = [
                 'email' => $email,
                 'amount' => $amount,
+                'plan'=> $plan,
                 'metadata' => $metadata,
             ];
 
@@ -119,7 +121,7 @@ class FeesController extends Controller
         // ])->timeout(30)->post($url, $fields);
         
         $response = Http::withHeaders([
-            // "Authorization" => "Bearer ".config("services.paystack.secret_key"),
+           
             'Authorization' => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
             // "Authorization" => "Bearer sk_test_d95812d6e2776b0d1460b5d18b3fed4d92501b6f",
             "Cache-Control" => "no-cache",
@@ -140,8 +142,6 @@ class FeesController extends Controller
         $fees->payment_status = 0; // pending or similar
         $fees->save();
 
-        // Redirect the user to Paystack's checkout page
-        // return redirect($responseData['data']['authorization_url']);
     
         return response()->json( [ 'response'=>$responseData, 'message'=>'payment successful '],200);
     } catch (Exception $e) {
@@ -154,7 +154,8 @@ class FeesController extends Controller
     public function payStackWebhook(Request $request)
     {
         $payload = $request->getContent();
-        $paystackSecret = config('services.paystack.secret_key');
+        // $paystackSecret = env('PAYSTACK_SECRET_KEY');
+        $paystackSecret = 'sk_test_d95812d6e2776b0d1460b5d18b3fed4d92501b6f'; // Replace with your actual secret key
         $paystackHeader = $request->header('x-paystack-signature');
     
         // Verify the Paystack webhook signature
@@ -179,8 +180,12 @@ class FeesController extends Controller
                             $profile->save();
                         }
         
-                        return response()->json(['status' => 'Payment successful'], 200);
+                        return response()->json(['status' => 'Payment successful','profile'=>$profile], 200);
                     }
+            }elseif($eventType === 'subscription.expired'){
+                $email = $eventData['customer']['email']; // Notify user or mark subscription as expired in your database
+                return response()->json(['status' => 'your subscription has expired'], 200);
+                
             } elseif ($eventType === 'charge.failure') {
                 // Handle failed payment
                 return response()->json(['status' => 'Payment failed'], 400);

@@ -136,56 +136,7 @@ class AuthController extends Controller
         return response($response, 200); 
     }
 
-      /********
-       Admin Login endpoint
-       */
-    //   public function loginAdmin(Request $request) {
-    //     $formFields = $request->validate([
-    //         'email' => ['required', 'email'],
-    //         'user_role' => ['required', 'email'],
-    //         'password' => 'required|min:6'
-    //     ]);
-
-    //     // Hash Password
-    //     $user = User::where('email', $formFields['email'])->first();
-
-    //     if(!$user || !Hash::check($formFields['password'], $user->password)) {
-    //         return response([
-    //             'message' => 'Invalid login creds'
-    //         ], 401);
-    //     }
-    //     if($user->user_role != 'admin') {
-    //         abort(403, 'Unauthorized Action');
-    //  }
-    //     if($user->email_verified_at == null) {
-    //        $user->sendEmailVerificationNotification();
-    //         return response([
-    //             'message' => 'Please check your email for verification link', 'status'=>false
-    //         ], 401);
-    //     }
-       
-    //     $token = $user->createToken('myapptoken')->plainTextToken;
-    //     //$response = [  'user'=> $formFields,   'token' => $token   ];
-    //     $response= ['sign successful !!','token' => $token ];
-    //     return response($response, 201); 
-    // }
-
-        /*******
-         * resend email verification
-        //  ************/ 
-        // public function resendLink(Request $request){
-        //     $formFields = $request->validate([
-        //         'email' => ['required', 'email'],
-        //     ]);
-        //     $user = User::where('email', $formFields['email'])->first();
-        //     if($user){
-        //         $user->sendEmailVerificationNotification();
-        //         return response(['message'=>'Please check your email for verification link', 'status'=>true, 201]);
-        //     }
-        //     return response(['message'=>'Wrong email, pls confirm email', 'status'=>false, 401]);
-        // }
-
-
+     
     // Logout User
     public function logout(Request $request) {
        $request->user()->currentAccessToken()->delete();

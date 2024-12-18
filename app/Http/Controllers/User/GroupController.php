@@ -137,19 +137,12 @@ class GroupController extends Controller
 
 public function update(Request $request) {
   $request->validate([
-      'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:1024',
+      'image' => 'nullable',
       'details' => 'string|required',
-      'name' => 'unique:groups|string',
+      // 'name' => 'unique:groups|string',
   ]);
 
   $group = Group::findOrFail($request->id);
-
-  // Clear the unique validation for the current group's name
-  $nameValidation = 'unique:groups,name,' . $group->id;
-
-  $request->validate([
-      'name' => $nameValidation
-  ]);
 
   // Update details and name
   $group->details = $request->input('details');
@@ -157,14 +150,13 @@ public function update(Request $request) {
 
   // Handle image upload
   if ($request->hasFile('image')) {
-      // Delete existing image if it exists
-      if ($group->image) {
-          Storage::disk('public')->delete($group->image);
-      }
-      // Store new image
-      $image = $request->file('image')->store('image', 'public');
+     // Store new image
+    $image = $request->file('image')->store('image', 'public');
+      //delete former image
+      Storage::disk('public')->delete($group->image);
       $group->image = $image;
-  }
+    }
+
   $group->save();
 
   return response()->json([
