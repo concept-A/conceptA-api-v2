@@ -53,10 +53,11 @@ Route::group(['prefix' => 'v2'], function () {
 
         //////////////////////ALL ROUTE ACCESSIBLE TO ALL USER //////////////// 
         Route::get('/products', [ProductController::class, 'index']);
-        Route::get('/categories/{category}/products', [ProductController::class, 'showByCategory']);
         Route::get('/products/{id}', [ProductController::class, 'show']);
+        Route::get('/categories/{category}/products', [ProductController::class, 'showByCategory']);  //get all products by category
+        Route::get('/categories', [CategoryController::class, 'index']);
+       
   
-        //////////////////// get all products by category///////////
 });
 
 
@@ -88,7 +89,7 @@ Route::group(  ['middleware'=> ['auth:sanctum','verified'],  'prefix' => 'v2' ],
     Route::delete('/profiles/{id}', [ProfileController::class, 'delete']);
 
   //  category route
-    Route::get('/categories', [CategoryController::class, 'index']);
+    // Route::get('/categories', [CategoryController::class, 'index']);
     Route::get('/categories/{id}', [CategoryController::class, 'show']);
     Route::post('categories', [CategoryController::class, 'store']);
     Route::patch('/categories/{id}', [CategoryController::class, 'update']);
@@ -96,8 +97,8 @@ Route::group(  ['middleware'=> ['auth:sanctum','verified'],  'prefix' => 'v2' ],
     
      // product route
     // Route::get('/products', [ProductController::class, 'index']);
-    // Route::get('/products/{id}', [ProductController::class, 'show']);
     // Route::get('/cat-products/{id}', [ProductController::class, 'showBycategory']);
+    Route::get('/user-product/{id}', [ProductController::class, 'showUserProduct']);
     Route::post('products', [ProductController::class, 'store']);
     Route::patch('/products/{id}', [ProductController::class, 'update']);
     Route::delete('/products/{id}', [ProductController::class, 'delete']);

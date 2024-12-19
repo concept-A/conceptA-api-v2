@@ -86,7 +86,7 @@ class FeesController extends Controller
     //   **********************/
      public function payStack(Request $request)
         {   
-            $user = User::findOrFail(4);
+            $user = User::findOrFail($request->user_id);
         if( $request->amount < 2000){
             return response()->json(['message'=>'invalid amount, pls comfirm '],400);
          }
@@ -116,7 +116,7 @@ class FeesController extends Controller
             ];
 
         // $response = Http::withHeaders([
-        //     "Authorization" => "Bearer ".config("services.paystack.secret_key"),
+        //     'Authorization' => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
         //     "Cache-Control" => "no-cache",
         // ])->timeout(30)->post($url, $fields);
         

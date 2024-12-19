@@ -30,29 +30,39 @@ class ProductController extends Controller
         $allProduct=  Product::with('categories')->get();
         return response()->json( ['Products' => $allProduct, 'status'=>true], 200);
     }
-/////////////////////////////////////////////////////////////////////////////////
-      //Show single user Product by caregory
-      // public function showByCategory(Request $request ) {
 
-      //   // $Products = DB::table('products.categories')->where('category_id', $request->id)->get();
+    
+     ////////////////////////////////////////////////////////////////////////
+         //Show single Product
+         public function show(Request $request ) {
+            $Product = Product::with('categories')->findOrFail($request->id);
+              if(empty( $Product)){
+                  return response()->json(
+                      ['message' => " product does not exist",
+                      'status'=>true],404);
+              }
+              return response()->json(['Product' => $Product,'status'=>true], 200);
+          }
+    
+////////////////////////////////////////////////////////////////////////
+         //Show All user Products
+         public function showUserProduct(Request $request ) {
+          $user = User::with('Product.categories')->findOrFail($request->id);
+          // if($user->id != auth()->id()) {
+          //     abort(403, 'Unauthorized Action',);
+          // }
+            if(empty( $user->product)){
+              // if(!$user->Product){
+                return response()->json(
+                    ['message' => "You don't have a Product, please create one",
+                    'status'=>true],404);
+            }
+            $Product = $user->Product;
+            return response()->json(['Products' => $Product,'status'=>true], 200);
+        }
+  
 
-      //   // $user = Product::with('Product.categories')->findOrFail($request->id);   
-      //   // if($user->id != auth()->id()) {
-      //   //     abort(403, 'Unauthorized Action',);
-      //   // }
-      //     if(empty( $Products)){
-      //       // if(!$user->Product){
-      //         return response()->json(
-      //             ['message' => "no product, please create one",
-      //             'status'=>true],404);
-      //     }
-          
-      //     return response()->json(['Products' => $Products,'status'=>true], 200);
-      // }
-
-
-
-      //Show all product by Category
+////// //Show all product by Category
       public function showByCategory(Category $category)
         {
             // Get products related to the category
@@ -72,24 +82,6 @@ class ProductController extends Controller
                 'status' => true,
             ], 200);
         }
-////////////////////////////////////////////////////////////////////////
-         //Show single user Product
-         public function show(Request $request ) {
-          $user = User::with('Product.categories')->findOrFail($request->id);
-          // if($user->id != auth()->id()) {
-          //     abort(403, 'Unauthorized Action',);
-          // }
-            if(empty( $user->product)){
-              // if(!$user->Product){
-                return response()->json(
-                    ['message' => "You don't have a Product, please create one",
-                    'status'=>true],404);
-            }
-            $Product = $user->Product;
-            return response()->json(['Products' => $Product,'status'=>true], 200);
-        }
-  
-
 
     /*****************
      *   // Store Business Product Data
