@@ -44,22 +44,22 @@ class ProfileController extends Controller
         return response()->json( ['message' => 'empty pls create profile', 'status'=>false], 404);
        }
         // $allProfile = Profile::all();
-        return response()->json( ['Profiles' => $allProfile, 'status'=>true], 200);
+        return response()->json( ['Profiles.groups' => $allProfile, 'status'=>true], 200);
     }
 
      //Show single user profile
      public function show(Request $request ) {
-        $profile = Profile::with('profile.categories')->findOrFail($request->id);
+        $profile = Profile::with('categories')->findOrFail($request->id);
 
           return response()->json(['Profile' => $profile,'status'=>true], 200);
       }
       
       //Show single user profile
       public function userProfile(Request $request ) {
-        $user = User::with('profile.categories')->findOrFail($request->id);
-        if($user->id != auth()->id()) {
-            abort(403, 'Unauthorized Action',);
-        }
+        $user = User::with('profile.categories','groups')->findOrFail($request->id);
+        // if($user->id != auth()->id()) {
+        //     abort(403, 'Unauthorized Action',);
+        // }
           if(empty( $user->profile)){
             // if(!$user->profile){
               return response()->json(

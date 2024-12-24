@@ -56,6 +56,7 @@ Route::group(['prefix' => 'v2'], function () {
         Route::get('/products/{id}', [ProductController::class, 'show']);
         Route::get('/categories/{category}/products', [ProductController::class, 'showByCategory']);  //get all products by category
         Route::get('/categories', [CategoryController::class, 'index']);
+        Route::get('/users/{id}', [UserController::class, 'showVendor']);
        
   
 });
@@ -74,7 +75,7 @@ Route::group(  ['middleware'=> ['auth:sanctum','verified'],  'prefix' => 'v2' ],
      Route::delete('/admin/users/{id}', [AdminController::class, 'delete']);
      
    // Vendor only route
-    Route::get('/users/{id}', [UserController::class, 'showVendor']);
+    // Route::get('/users/{id}', [UserController::class, 'showVendor']);
     Route::patch('/users/{id}', [UserController::class, 'updateUser']);
     Route::patch('/join-group/{id}', [UserController::class, 'joinGroup']);
     Route::patch('/leave-group/{id}', [UserController::class, 'leaveGroup']);

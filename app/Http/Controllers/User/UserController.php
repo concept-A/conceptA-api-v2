@@ -24,7 +24,7 @@ class UserController extends Controller
 public static function middleware(): array
 {
     return [
-        new Middleware(middleware: 'admin', only: [ 'index','show', 'makeAdmin','makeUser','store', 'delete', ]),
+        new Middleware(middleware: 'admin', only: [ 'index', 'makeAdmin','makeUser','store', 'delete', ]),
        // new Middleware(middleware: 'auth:sanctum', except: ['index', 'show']),
     ];
 }
@@ -35,9 +35,9 @@ public static function middleware(): array
        $user = User::with('profile','groups')->find($request->id);
     // $user = User::findOrFail($request->id);    
 
-    if($user->id != auth()->id()) {
-        abort(403, 'Unauthorized Action',);
-    }
+    // if($user->id != auth()->id()) {
+    //     abort(403, 'Unauthorized Action',);
+    // }
     return response()->json(['user'=>$user,'status'=>true],200);
     }
 
