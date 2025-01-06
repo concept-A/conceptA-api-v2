@@ -20,7 +20,7 @@ class ProductController extends Controller
     // public static function middleware(): array
     // {
     //     return [
-    //         new Middleware(middleware: 'admin', only: [ 'index','delete']),
+    //         new Middleware(middleware: 'admin', only: [ 'index']),
     //     ];
     // }
 
@@ -185,10 +185,13 @@ class ProductController extends Controller
 public function delete(Request $request) {
     $product = Product::find($request->id);
 
-    if($product->user_id != auth()->id() ) {
-      abort(403, 'Unauthorized Action',);
-  }   
-//    $user->delete();
+//     if($product->user_id != auth()->id() ) {
+//       abort(403, 'Unauthorized Action',);
+//   }   
+    if($product->image && Storage::disk('public')->exists($product->image)) {
+        Storage::disk('public')->delete($product->image);     
+    }
+
      $product->delete();
      return response()->json([ 'message'=>'Product deleted successfully!'],200);
 

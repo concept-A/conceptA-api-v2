@@ -13,16 +13,20 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Notifications\Notification;
 
+// for middleware in controller
+use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Routing\Controllers\HasMiddleware;
+
 class FeesController extends Controller
 {
-   // public $amount= 50000;
-     
-    //  public function __construct()
-    // {
-    //  $this->middleware(['admin','staff'])->only([ 'filter','delete','show']);
-   
-    // }
- 
+
+   public static function middleware(): array
+    {
+        return [
+            new Middleware(middleware: 'admin', only: [ 'index']),
+        ];
+    }
+
     // show all paid fees
     public function allPayment()
     {

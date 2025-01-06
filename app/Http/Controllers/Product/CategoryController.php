@@ -17,7 +17,7 @@ class CategoryController extends Controller
 public static function middleware(): array
 {
     return [
-        new Middleware(middleware: 'admin', only: [ 'store','update']),
+        new Middleware(middleware: 'admin', only: [ 'store','update','delete']),
     ];
 }
 
@@ -73,7 +73,7 @@ public static function middleware(): array
     public function delete(Request $request) {
 
          
-        $cat =Category::findOrFail($request->id);
+        $cat = Category::findOrFail($request->id);
             $cat->delete();
         return response()->json([ 'message'=>'category deleted successfully!'],200);
     }

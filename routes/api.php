@@ -9,6 +9,7 @@ use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\AdminController;
 use App\Http\Controllers\User\GroupController;
 use App\Http\Controllers\User\ProfileController;
+use App\Http\Controllers\Advert\AdvertController;
 use App\Http\Controllers\Api\NewPasswordController;
 use App\Http\Controllers\Api\SocialLoginController;
 use App\Http\Controllers\Product\ProductController;
@@ -62,7 +63,7 @@ Route::group(['prefix' => 'v2'], function () {
 });
 
 
-Route::group(  ['middleware'=> ['auth:sanctum','verified'],  'prefix' => 'v2' ], function () {  
+Route::group(  ['middleware'=> ['auth:sanctum','verified'],  'prefix' => 'v2' ], function () { 
     Route::post('/logout', [AuthController::class, 'logout']);
 
           // Manage User routes
@@ -100,9 +101,9 @@ Route::group(  ['middleware'=> ['auth:sanctum','verified'],  'prefix' => 'v2' ],
     // Route::get('/products', [ProductController::class, 'index']);
     // Route::get('/cat-products/{id}', [ProductController::class, 'showBycategory']);
     Route::get('/user-product/{id}', [ProductController::class, 'showUserProduct']);
-    Route::post('products', [ProductController::class, 'store']);
-    Route::patch('/products/{id}', [ProductController::class, 'update']);
-    Route::delete('/products/{id}', [ProductController::class, 'delete']);
+    Route::post('products', [ProductController::class, 'store'])->middleware('subscriber');
+    Route::patch('/products/{id}', [ProductController::class, 'update'])->middleware('subscriber');
+    Route::delete('/products/{id}', [ProductController::class, 'delete'])->middleware('subscriber');
 
 
   Route::get('/groups', [GroupController::class, 'index']);
@@ -119,18 +120,23 @@ Route::delete('/groups/{id}', [GroupController::class, 'delete']);
    Route::get('/requests', [BusinessRequestController::class, 'index']);
     Route::get('/requests/{id}', [BusinessRequestController::class, 'show']);
     Route::get('/user-requests/{id}', [BusinessRequestController::class, 'showUserRequest']);
-    Route::post('requests', [BusinessRequestController::class, 'store']);
-    Route::post('/requests/{id}', [BusinessRequestController::class, 'update']);
-    Route::delete('/requests/{id}', [BusinessRequestController::class, 'delete']);
+    Route::post('requests', [BusinessRequestController::class, 'store'])->middleware('subscriber');
+    Route::patch('/requests/{id}', [BusinessRequestController::class, 'update'])->middleware('subscriber');
+    Route::delete('/requests/{id}', [BusinessRequestController::class, 'delete'])->middleware('subscriber');
 
-/////////////////////////MANAGE PAYMENT/////////////////////
-Route::get('/payments', [FeesController::class, 'index']);
-Route::post('/paystack-payment', [FeesController::class, 'payStack']);
-// Route::post('/paystack-webhook', [FeesController::class, 'payStackWebhook']);
+  /////////////////////////MANAGE PAYMENT/////////////////////
+  Route::get('/payments', [FeesController::class, 'index']);
+  Route::post('/paystack-payment', [FeesController::class, 'payStack']);
+  // Route::post('/paystack-webhook', [FeesController::class, 'payStackWebhook']);
+  Route::post('/filter-payment', [FeesController::class, 'filter']);
 
-Route::post('/filter-payment', [FeesController::class, 'filter']);
-
-     
+  /////////////////////////MANAGE ADVERT/////////////////////
+  Route::get('/adverts', [AdvertController::class, 'index']);
+  Route::get('/adverts/{id}', [AdvertController::class, 'show']);
+  Route::post('adverts', [AdvertController::class, 'store']);
+  Route::patch('/adverts/{id}', [AdvertController::class, 'update']);
+  Route::delete('/adverts/{id}', [AdvertController::class, 'delete']);
+      
 });
       
 

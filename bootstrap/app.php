@@ -9,6 +9,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 // use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
  
 use App\Http\Middleware\IsAdminMiddleWare;
+use App\Http\Middleware\IsSubscribedMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -26,7 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // ]);
     
         $middleware->alias(['admin' => IsAdminMiddleWare::class   ]);
-        $middleware->alias(['vendor' => IsAdminMiddleWare::class   ]);
+        $middleware->alias(['subscriber' => IsSubscribedMiddleware::class   ]);
    
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -19,12 +19,12 @@ use function PHPUnit\Framework\isEmpty;
 class BusinessRequestController extends Controller
 {
 
-    // public static function middleware(): array
-    // {
-    //     return [
-    //         new Middleware(middleware: 'admin', only: [ 'index','delete']),
-    //     ];
-    // }
+    public static function middleware(): array
+    {
+        return [
+            new Middleware(middleware: 'admin', only: [ 'index']),
+        ];
+    }
 
     // Show all BusinessRequest
     public function index() {
@@ -66,9 +66,9 @@ class BusinessRequestController extends Controller
      *********************************/
   
     public function store(Request $request) {
-        $category = Group::all();
-        if (($category->isEmpty()) ) {
-            // if (!$category) {
+        $group = Group::all();
+        if (($group->isEmpty()) ) {
+            // if (!$group) {
             return response()->json(
                 ['message' => "pls add group, categories empty",
                 'status'=>false ],401);

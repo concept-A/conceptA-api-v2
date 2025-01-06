@@ -173,9 +173,10 @@ if ($request->has('group_id')) {
             return response()->json(['message' => "You don't have a profile, please create one",'status'=>true]);
         }
       //    Make sure logged in user is owner
-          if($profile->user_id != auth()->id() ) {
+          if(auth()->User()->user_role !='admin' && $profile->user_id != auth()->id() ) {
               abort(403, 'Unauthorized Action',);
           }
+        
         $request->validate([
             'business_name' => 'nullable',
             'shop_address' => 'nullable',
