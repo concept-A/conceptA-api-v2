@@ -28,10 +28,11 @@ class FeesController extends Controller
     }
 
     // show all paid fees
-    public function allPayment()
+    public function index()
     {
         $allFees =  Fee::all();
-        return response()->json(['feess'=>$allFees],200);
+        return response()->json(['Payments'=>$allFees],200);
+        
     }
 
 
