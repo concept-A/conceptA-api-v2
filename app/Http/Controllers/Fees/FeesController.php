@@ -106,19 +106,19 @@ class FeesController extends Controller
                 ],
             ];
 
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
-                'Cache-Control' => 'no-cache',
-            ])->post('https://api.paystack.co/transaction/initialize', $fields);
-    
             // $response = Http::withHeaders([
+            //     'Authorization' => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
+            //     'Cache-Control' => 'no-cache',
+            // ])->post('https://api.paystack.co/transaction/initialize', $fields);
+    
+            $response = Http::withHeaders([
            
-            //             'Authorization' => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
-            //             // "Authorization" => "Bearer sk_test_d95812d6e2776b0d1460b5d18b3fed4d92501b6f",
-            //             "Cache-Control" => "no-cache",
-            //         ])->timeout(30)->withOptions([
-            //             'verify' => false,
-            //         ])->post('https://api.paystack.co/transaction/initialize', $fields);
+                        'Authorization' => 'Bearer ' .env('PAYSTACK_SECRET_KEY'),
+                        // "Authorization" => "Bearer sk_test_d95812d6e2776b0d1460b5d18b3fed4d92501b6f",
+                        "Cache-Control" => "no-cache",
+                    ])->timeout(30)->withOptions([
+                        'verify' => false,
+                    ])->post('https://api.paystack.co/transaction/initialize', $fields);
                     
             $responseData = $response->json();
             $paymentReference = $responseData['data']['reference'];

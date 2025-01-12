@@ -80,7 +80,7 @@ class GroupController extends Controller
       $request->validate([
         'name' => 'required|string|max:255',
         'details' => 'required|string',
-      'image' => 'nullable',
+        'image' => 'nullable|',
        
         ]);
         
@@ -89,8 +89,7 @@ class GroupController extends Controller
          $businessGroup->name =  $request->name;
         
         // $group = Group::create($request->all());
-       
-        
+  
         //   //check if image
         if($request->hasFile('image')){
           //upload it

@@ -118,7 +118,7 @@ class BusinessRequestController extends Controller
         $request->validate([
             'title' => 'sometimes|required|string|max:255', // Only validate if present
             'details' => 'sometimes|required|string', // Only validate if present
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'image' => 'sometimes',
             'group_id' => 'nullable|array',
             'group_id.*' => 'exists:groups,id',
         ]);

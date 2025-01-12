@@ -44,8 +44,8 @@ public static function middleware(): array
         'link' => 'string',
         'title' => 'string',
         'details' => 'required|string',
-        'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-        // 'image' => 'required|string',
+        // 'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+        'image' => 'nullable|image',
     ]);
         $advert = new Advert($validatedField);  
 
@@ -64,7 +64,9 @@ public static function middleware(): array
         'details' => 'string',
         'link' => 'string',
         'title' => 'string',
-        'image' => 'sometimes|image|max:2048',
+        'image' => 'nullable',
+        // 'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+
           ]);
 
 

@@ -96,12 +96,12 @@ class ProductController extends Controller
                 'status'=>false ],401);
         }
        $request->validate([
-           'image' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048',
+           'image' => 'nullable|max:2048',
             'price' => 'required',
             'details' => 'required',
             'name' => 'required',
             'category_id' => 'required|array', // Ensure category_id is an array
-            '   category_id.*' => 'exists:categories,id', // Validate that each category ID exists
+            'category_id.*' => 'exists:categories,id', // Validate that each category ID exists
         ]);
         
            $businessProduct = new Product();
@@ -137,13 +137,17 @@ class ProductController extends Controller
     public function update(Request $request) {
 
              $request->validate([
-           'image' => 'sometimes|max:2048',
-            'price' => '',
+           'image' => 'nullable|max:1048',
+        'price' => '',
             'details' => '',
             'name' => '',
             'category_id' => 'array', // Ensure category_id is an array
             'category_id.*' => 'exists:categories,id', // Validate that each category ID exists
         ]);
+
+        return response()->json([
+            'message'=> 'Product updated successfully!',
+            'Product'=>$request->all(), $request->file('image'),'status'=>true], 200);
 
         $businessProduct = Product::findOrFail($request->id);
        
@@ -166,6 +170,7 @@ class ProductController extends Controller
              }
                $businessProduct->user_id = auth()->id();
 
+               
                $businessProduct->save();
                //   // Attach categories to the product
             if ($request->has('category_id')) {

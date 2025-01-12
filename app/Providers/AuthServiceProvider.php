@@ -39,7 +39,7 @@ class AuthServiceProvider extends ServiceProvider
 
         VerifyEmail::toMailUsing(function ($notifiable, $url) {
             // Extract the query parameters
-            $spaUrl = env('FRONT_URL', 'http://localhost:3030') . '/verify?email_verify_url=' . urlencode($url);
+            $spaUrl = env('FRONT_URL', 'https://concepta.com.ng') . '/verify?email_verify_url=' . urlencode($url);
         
             return (new MailMessage)
                 ->subject('Verify Your Email Address')

@@ -58,6 +58,8 @@ Route::group(['prefix' => 'v2'], function () {
         Route::get('/categories/{category}/products', [ProductController::class, 'showByCategory']);  //get all products by category
         Route::get('/categories', [CategoryController::class, 'index']);
         Route::get('/users/{id}', [UserController::class, 'showVendor']);
+        Route::get('/adverts', [AdvertController::class, 'index']);
+        Route::get('/adverts/{id}', [AdvertController::class, 'show']);
        
   
 });
@@ -78,8 +80,8 @@ Route::group(  ['middleware'=> ['auth:sanctum','verified'],  'prefix' => 'v2' ],
    // Vendor only route
     // Route::get('/users/{id}', [UserController::class, 'showVendor']);
     Route::patch('/users/{id}', [UserController::class, 'updateUser']);
-    Route::patch('/join-group/{id}', [UserController::class, 'joinGroup']);
-    Route::patch('/leave-group/{id}', [UserController::class, 'leaveGroup']);
+    Route::patch('/join-group/{id}', [UserController::class, 'joinGroup'])->middleware('subscriber');
+    Route::patch('/leave-group/{id}', [UserController::class, 'leaveGroup'])->middleware('subscriber');
     
 
     //  profile route
@@ -131,8 +133,8 @@ Route::delete('/groups/{id}', [GroupController::class, 'delete']);
   Route::post('/filter-payment', [FeesController::class, 'filter']);
 
   /////////////////////////MANAGE ADVERT/////////////////////
-  Route::get('/adverts', [AdvertController::class, 'index']);
-  Route::get('/adverts/{id}', [AdvertController::class, 'show']);
+  // Route::get('/adverts', [AdvertController::class, 'index']);
+  // Route::get('/adverts/{id}', [AdvertController::class, 'show']);
   Route::post('adverts', [AdvertController::class, 'store']);
   Route::patch('/adverts/{id}', [AdvertController::class, 'update']);
   Route::delete('/adverts/{id}', [AdvertController::class, 'delete']);

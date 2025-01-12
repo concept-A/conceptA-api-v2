@@ -95,7 +95,7 @@ class ProfileController extends Controller
        $request->validate([
             'business_name' => 'unique:profiles|required',
             'shop_address' => 'required',
-           'image' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048',
+           'image' => 'nullable|max:2048',
             'contact' => 'required',
             'subscription' => 'nullable',
             // 'category_id' =>'required',
