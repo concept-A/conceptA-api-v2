@@ -44,13 +44,12 @@ public static function middleware(): array
         'link' => 'string',
         'title' => 'string',
         'details' => 'required|string',
-        // 'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-        'image' => 'nullable|image',
+        'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:1048',
     ]);
         $advert = new Advert($validatedField);  
 
         if($request->hasFile('image')) {
-            $advert->image = $request->file('image')->store('image', 'public');
+            $advert->image = $request->file('image')->store('adverts', 'public');
         }
     
         $advert->save();
@@ -64,8 +63,8 @@ public static function middleware(): array
         'details' => 'string',
         'link' => 'string',
         'title' => 'string',
-        'image' => 'nullable',
-        // 'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+        // 'image' => 'nullable',
+        'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:1048',
 
           ]);
 
@@ -78,7 +77,7 @@ public static function middleware(): array
               //check if image
               if($request->hasFile('image')){
                 //upload it
-                $image = $request->file('image')->store('image', 'public');
+                $image = $request->file('image')->store('adverts', 'public');
                 //delete former image
                 Storage::disk('public')->delete($advert->image);
                 $advert->image = $image;

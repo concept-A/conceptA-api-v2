@@ -96,7 +96,7 @@ class ProductController extends Controller
                 'status'=>false ],401);
         }
        $request->validate([
-           'image' => 'nullable|max:2048',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:1048',
             'price' => 'required',
             'details' => 'required',
             'name' => 'required',
@@ -112,7 +112,7 @@ class ProductController extends Controller
            $businessProduct->name =  $request->name;
 
     if($request->hasFile('image')) {
-        $businessProduct->image = $request->file('image')->store('image', 'public');
+        $businessProduct->image = $request->file('image')->store('products', 'public');
     }
 
     $businessProduct->user_id = auth()->id();
@@ -130,60 +130,58 @@ class ProductController extends Controller
     }
 
 
-    ///////////////////////////
-   ////// UPDATE PRODUCT/////////////
+        ///////////////////////////
+    ////// UPDATE PRODUCT/////////////
 
-       // Update Business Product Data
-    public function update(Request $request) {
-
-             $request->validate([
-           'image' => 'nullable|max:1048',
-        'price' => '',
-            'details' => '',
-            'name' => '',
+        public function update(Request $request)
+    {
+        $request->validate([
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1048',
+            'price' => 'nullable|numeric',
+            'details' => 'nullable|string',
+            'name' => 'nullable|string',
             'category_id' => 'array', // Ensure category_id is an array
             'category_id.*' => 'exists:categories,id', // Validate that each category ID exists
         ]);
 
-        return response()->json([
-            'message'=> 'Product updated successfully!',
-            'Product'=>$request->all(), $request->file('image'),'status'=>true], 200);
-
         $businessProduct = Product::findOrFail($request->id);
-       
-          if($businessProduct->user_id != auth()->id() ) {
-                      abort(403, 'Unauthorized Action',);
-                  }   
-           $businessProduct->image = $request->image;
-           $businessProduct ->price= $request->price;
-           $businessProduct->details =  $request->details;
-           $businessProduct->name =  $request->name;
-          //  $businessProduct->category_id =  $request->category_id;
 
-              //check if image
-          if($request->hasFile('image')){
-            //upload it
-            $image = $request->file('image')->store('image', 'public');
-            //delete former image
-            Storage::disk('public')->delete($businessProduct->image);
+        // Check if the user is authorized to update the product
+        if (auth()->user()->user_role != 'admin' && $businessProduct->user_id != auth()->id()) {
+            abort(403, 'Unauthorized Action');
+        }
+
+        // Update product fields
+        $businessProduct->price = $request->price ?? $businessProduct->price;
+        $businessProduct->details = $request->details ?? $businessProduct->details;
+        $businessProduct->name = $request->name ?? $businessProduct->name;
+
+        // Check if a new image is uploaded
+        if ($request->hasFile('image')) {
+            // Delete the old image if it exists
+            if ($businessProduct->image && Storage::disk('public')->exists($businessProduct->image)) {
+                Storage::disk('public')->delete($businessProduct->image);
+            }
+
+            // Upload the new image
+            $image = $request->file('image')->store('products', 'public');
             $businessProduct->image = $image;
-             }
-               $businessProduct->user_id = auth()->id();
+        }
 
-               
-               $businessProduct->save();
-               //   // Attach categories to the product
-            if ($request->has('category_id')) {
-              $businessProduct->categories()->sync($request->category_id);
-          }
+        // Save updated product
+        $businessProduct->save();
 
-          return response()->json([
-                      'message'=> 'Product updated successfully!',
-                      'Product'=>$businessProduct,'status'=>true], 200);
-          
-        
-            
-      }
+        // Attach categories to the product
+        if ($request->has('category_id')) {
+            $businessProduct->categories()->sync($request->category_id);
+        }
+
+        return response()->json([
+            'message' => 'Product updated successfully!',
+            'Product' => $businessProduct,
+            'status' => true,
+        ], 200);
+    }
 
 
 //  Delete user and business product

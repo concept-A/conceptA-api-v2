@@ -9,7 +9,7 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-
+use App\Models\BusinessRequest;
 // for middleware in controller
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Routing\Controllers\Middleware;
@@ -18,16 +18,7 @@ use Illuminate\Routing\Controllers\HasMiddleware;
 class ProfileController extends Controller
 {
 
-    /******* ********
- * REMEMBER TO RESOLVE MIDDLEWARE
- * *******/
-
-//     public function __construct()    // the old way
-//     {
-//     $this->middleware('admin')->only([ 'index','delete', ]);
-// // $this->middleware('vendor')->only([ 'vendorProfile','update', ]);
-   
-//     }
+    /******* ******** REMEMBER TO RESOLVE MIDDLEWARE **********/
 
     public static function middleware(): array
     {
@@ -95,10 +86,9 @@ class ProfileController extends Controller
        $request->validate([
             'business_name' => 'unique:profiles|required',
             'shop_address' => 'required',
-           'image' => 'nullable|max:2048',
+           'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1048',
             'contact' => 'required',
             'subscription' => 'nullable',
-            // 'category_id' =>'required',
             'group_id' =>'nullable',
             'category_id' => 'required|array', // Ensure category_id is an array
     '   category_id.*' => 'exists:categories,id', // Validate that each category ID exists
@@ -113,7 +103,7 @@ class ProfileController extends Controller
           // $businessprofile->group_id =  1;
 
     if($request->hasFile('image')) {
-        $businessprofile->image = $request->file('image')->store('image', 'public');
+        $businessprofile->image = $request->file('image')->store('profiles', 'public');
     }
 
     $businessprofile->user_id = auth()->id();
@@ -162,62 +152,57 @@ if ($request->has('group_id')) {
             'message'=> 'joined group successfully!','status'=>true], 200);
     }
 
-
-
-    // Update Business profile Data
-    public function update(Request $request) {
-      
-        $profile = DB::table('profiles')->where('user_id', $request->id)->first();
-       // if(!$user->profile){
-        if(empty($profile)){
-            return response()->json(['message' => "You don't have a profile, please create one",'status'=>true]);
-        }
-      //    Make sure logged in user is owner
-          if(auth()->User()->user_role !='admin' && $profile->user_id != auth()->id() ) {
-              abort(403, 'Unauthorized Action',);
-          }
-        
-        $request->validate([
-            'business_name' => 'nullable',
-            'shop_address' => 'nullable',
-            'image' => 'nullable',
-            'contact' => 'nullable',
-            'subscription' => 'nullable',
-            'category_id' => 'nullable|array', // Ensure category_id is an array
-            '   category_id.*' => 'exists:categories,id', // Validate that each category ID exists
+public function update(Request $request)
+{
+    $profile = DB::table('profiles')->where('user_id', $request->id)->first();
+    if (empty($profile)) {
+        return response()->json([
+            'message' => "You don't have a profile, please create one",
+            'status' => true,
         ]);
-            $businessprofile =  Profile::find($profile->id);
-           $businessprofile->business_name = $request->business_name;
-            $businessprofile->shop_address = $request->shop_address;
-            $businessprofile->image = $request->image;
-            $businessprofile->contact= $request->contact;
-            $businessprofile->subscription = $request->subscription;
-          
-            //check if image
-          if($request->hasFile('image')){
-            //upload it
-            $image = $request->file('image')->store('image', 'public');
-            //delete former image
-            Storage::disk('public')->delete($businessprofile->image);
-            $businessprofile->image = $image;
-             }
-
-           $businessprofile->save();
-
-           // Attach categories and group to the product
-  if ($request->has('category_id')) {
-    $businessprofile->categories()->sync($request->category_id);
-}
-if ($request->has('group_id')) {
-    $businessprofile->groups()->sync($request->group_id);
-}
-                
-        
-         return response()->json([
-            'message'=> 'profile updated successfully!',
-            'profile'=>$businessprofile,'status'=>true], 200);
-   
     }
+    if (auth()->user()->user_role != 'admin' && $profile->user_id != auth()->id()) {
+        abort(403, 'Unauthorized Action');
+    }
+    $validatedData = $request->validate([
+        'business_name' => 'nullable|string|max:255',
+        'shop_address' => 'nullable|string|max:255',
+        // 'image' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:1048',
+        'contact' => 'nullable|string|max:255',
+        'subscription' => 'nullable|boolean',
+        'category_id' => 'nullable|array',
+        'category_id.*' => 'exists:categories,id',
+        'group_id' => 'nullable|array',
+        'group_id.*' => 'exists:groups,id',
+        'image' => 'nullable|max:1048'
+    ]);
+
+    $businessProfile = Profile::find($profile->id);
+
+    if ($request->hasFile('image')) {
+        if ($businessProfile->image ) {
+            Storage::disk('public')->delete($businessProfile->image);
+        }
+        $validatedData['image'] = $request->file('image')->store('profiles', 'public');
+    }
+
+    $businessProfile->update($validatedData);
+
+    // Attach categories and groups if provided
+    if ($request->has('category_id')) {
+        $businessProfile->categories()->sync($request->category_id);
+    }
+    if ($request->has('group_id')) {
+        $businessProfile->groups()->sync($request->group_id);
+    }
+
+    // Return response
+    return response()->json([
+        'message' => 'Profile updated successfully!',
+        'profile' => $businessProfile,
+        'status' => true,
+    ], 200);
+}
 
 
 

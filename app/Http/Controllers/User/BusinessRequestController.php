@@ -76,7 +76,7 @@ class BusinessRequestController extends Controller
        $request->validate([
         'title' => 'required|string|max:255',
         'details' => 'required|string',
-        'image' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+        'image' => 'nullable|image|mimes:jpg,jpeg,png|max:1048',
         'group_id' => 'required|array',
         'group_id.*' => 'exists:groups,id', // Ensure each group exists
         ]);
@@ -86,7 +86,7 @@ class BusinessRequestController extends Controller
            $businessRequest->title =  $request->title;
 
     if($request->hasFile('image')) {
-        $businessRequest->image = $request->file('image')->store('image', 'public');
+        $businessRequest->image = $request->file('image')->store('requests', 'public');
     }
 
     $businessRequest->user_id = auth()->id();
@@ -116,20 +116,25 @@ class BusinessRequestController extends Controller
         }
         
         $request->validate([
-            'title' => 'sometimes|required|string|max:255', // Only validate if present
-            'details' => 'sometimes|required|string', // Only validate if present
-            'image' => 'sometimes',
+            'title' => 'nullable|string|max:255', // Only validate if present
+            'details' => 'nullable|string', // Only validate if present
+             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1048',
             'group_id' => 'nullable|array',
             'group_id.*' => 'exists:groups,id',
+            // 'image'=>'nullable',
         ]);
     
         $businessRequest->details =  $request->details;
         $businessRequest->title =  $request->title;
 
-        if($request->hasFile('image')) {
-            $businessRequest->image = $request->file('image')->store('image', 'public');
+        if ($request->hasFile('image')) {
+            // if ($businessRequest->image) {
+            //     Storage::disk('public')->delete($businessRequest->image);
+            // }
+            Storage::disk('public')->delete($businessRequest->image);
+            $businessRequest->image = $request->file('image')->store('requests', 'public');
         }
-    
+       
         $businessRequest->user_id = auth()->id();
         // $businessRequest->user_id = 1;
         $businessRequest->save(); 

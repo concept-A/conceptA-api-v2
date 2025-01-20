@@ -80,7 +80,9 @@ class GroupController extends Controller
       $request->validate([
         'name' => 'required|string|max:255',
         'details' => 'required|string',
-        'image' => 'nullable|',
+        // 'image' => 'nullable',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1048',
+
        
         ]);
         
@@ -93,7 +95,7 @@ class GroupController extends Controller
         //   //check if image
         if($request->hasFile('image')){
           //upload it
-          $businessGroup->image = $request->file('image')->store('image', 'public');
+          $businessGroup->image = $request->file('image')->store('groups', 'public');
            }
         
          $businessGroup->save();
@@ -105,65 +107,40 @@ class GroupController extends Controller
   }
 
 
-//   public function update(Request $request) {
+      public function update(Request $request) {
+        $request->validate([
+            'details' => 'string',
+            'name'=>'string',
+            // 'name' => 'unique:groups|string',
+            'image' => 'nullable',
 
-//     $request->validate([
-//         'image' => 'nullable|max:2048',
-//         'details' => 'string|required',
-//         'name' => 'unique:groups|string',
-//     ]);
-//      $group = Group::findOrfail($request->id);
-//        $group->image = $request->image;
-//        $group->details =  $request->details;
-//        $group->name =  $request->name;
+        ]);
 
-//        //check if image
-//        if($request->hasFile('image')){
-//         //upload it
-//         $image = $request->file('image')->store('image', 'public');
-//         //delete former image
-//         Storage::disk('public')->delete($group->image);
-//         $group->image = $image;
-//          }
+        $group = Group::findOrFail($request->id);
 
-//        $group->save();
-        
-//      return response()->json([
-//         'message'=> 'Group updated successfully!',
-//         'Group'=>$group,'status'=>true], 200);
+        // Update details and name
+        $group->details = $request->input('details');
+        $group->name = $request->input('name');
 
-// }
+        // Handle image upload
+        if ($request->hasFile('image')) {
 
-public function update(Request $request) {
-  $request->validate([
-      'image' => 'nullable',
-      'details' => 'string|required',
-      // 'name' => 'unique:groups|string',
-  ]);
+          if ($group->image) {
+            Storage::disk('public')->delete($group->image);
+        }
+          // Store new image
+          $image = $request->file('image')->store('groups', 'public');
+            $group->image = $image;
+          }
 
-  $group = Group::findOrFail($request->id);
+        $group->save();
 
-  // Update details and name
-  $group->details = $request->input('details');
-  $group->name = $request->input('name');
-
-  // Handle image upload
-  if ($request->hasFile('image')) {
-     // Store new image
-    $image = $request->file('image')->store('image', 'public');
-      //delete former image
-      Storage::disk('public')->delete($group->image);
-      $group->image = $image;
-    }
-
-  $group->save();
-
-  return response()->json([
-      'message' => 'Group updated successfully!',
-      'group' => $group,
-      'status' => true
-  ], 200);
-}
+        return response()->json([
+            'message' => 'Group updated successfully!',
+            'group' => $group,
+            'status' => true
+        ], 200);
+      }
 
 
 
